@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mk.mapper.MenuMapper">
+
+    <!-- 用户分页列表 -->
+    <select id="selectByUserId" resultType="com.mk.entity.SysMenu">
+        SELECT DISTINCT m.*
+        FROM sys_menu m
+        JOIN sys_role_menu rm ON m.menu_id = rm.menu_id
+        JOIN sys_user_role ur ON rm.role_id = ur.role_id
+        WHERE ur.user_id = #{userId}
+    </select>
+
+    <!-- 用户表单信息映射 property表示Java属性, column表示数据库属性列-->
+<!--    <resultMap id="UserFormMap" type="com.pei.dehaze.model.form.UserForm">-->
+<!--        <id property="id" column="id" jdbcType="BIGINT"/>-->
+<!--        <result property="username" column="username" jdbcType="VARCHAR"/>-->
+<!--        <result property="nickname" column="nickname" jdbcType="VARCHAR"/>-->
+<!--        <result property="mobile" column="mobile" jdbcType="VARCHAR"/>-->
+<!--        <result property="gender" column="gender" jdbcType="TINYINT"/>-->
+<!--        <result property="avatar" column="avatar" jdbcType="VARCHAR"/>-->
+<!--        <result property="email" column="email" jdbcType="VARCHAR"/>-->
+<!--        <result property="status" column="status" jdbcType="BOOLEAN"/>-->
+<!--        <result property="deptId" column="dept_id" jdbcType="BIGINT"/>-->
+<!--        <collection-->
+<!--                property="roleIds"-->
+<!--                column="id"-->
+<!--                select="com.pei.dehaze.mapper.SysUserRoleMapper.listRoleIdsByUserId">-->
+<!--            <result column="role_id"/>-->
+<!--        </collection>-->
+<!--    </resultMap>-->
+
+
+
+</mapper>

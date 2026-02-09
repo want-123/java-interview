@@ -1,0 +1,105 @@
+spring:
+  # 数据库配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/guiguxiaozhi?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 2846406663
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  # Spring Security配置
+  security:
+    jwt:
+      secret: java-interview-platform-2025-secret-key
+      expiration: 86400000 # Token有效期1天
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/chat_memory_db
+
+# LangChain4j配置（AI核心）
+langchain4j:
+  # 嵌入模型（Java面试场景微调）
+  #  embedding-model:
+#    type: hugging-face
+#    model-name: ./models/java-interview-embedding-model
+#    device: cpu # 有GPU则改为cuda
+  # LLM配置（Java面试专用7B模型，4bit量化）
+  community:
+    dashscope:
+      chat-model:
+        api-key: sk-9aeffb19cf16458daa4f6b0a24449a96
+        model-name: qwen-max
+        enable-search: true
+      embedding-model:
+        model-name: text-embedding-v3
+        api-key: sk-9aeffb19cf16458daa4f6b0a24449a96
+  ollama:
+    chat-model:
+      base-url: http://localhost:11434
+      model-name: deepseek-r1:1.5b
+      timeout: 40000
+#  llm:
+#    type: llama-cpp
+#    model-path: ./models/java-interview-7b-4bit.gguf
+#    context-window-size: 4096
+#    max-new-tokens: 1024
+#    temperature: 0.1 # 降低随机性，保证答案准确性
+
+# 存储配置
+milvus:
+  host: localhost
+  port: 19530
+  collection-name: java_interview_rag_segments
+  dim: 384 # 嵌入向量维度
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket-name: java-interview-files
+redis:
+  host: localhost
+  port: 6379
+#  password: 123456
+#  database: 0
+
+# 应用配置
+server:
+  port: 8080
+#  servlet:
+#    context-path: /java-interview-api
+
+# 功能配置
+function:
+  # 笔试防作弊
+  exam-anti-cheat:
+    screen-switch-limit: 3 # 切屏次数限制
+    abnormal-speed-threshold: 10 # 答题速度异常阈值（秒/题）
+  # Token压缩
+  token-compress:
+    compression-rate: 0.7 # 目标压缩率70%
+  # 代码沙箱
+  code-sandbox:
+    timeout: 5000 # 代码执行超时（5秒）
+    memory-limit: 128 # 内存限制（MB）
+
+# MCP服务配置
+mcp:
+  # MCP服务URL
+  service:
+    url: http://localhost:8080/api/mcp
+  # 连接配置
+  connection:
+    timeout: 5000 # 连接超时时间（毫秒）
+    retry-count: 3 # 重试次数
+  # 健康检查配置
+  health-check:
+    interval: 30000 # 健康检查间隔（毫秒）
+    timeout: 2000 # 健康检查超时时间（毫秒）
+  # 配置更新配置
+  config-update:
+    interval: 60000 # 配置更新间隔（毫秒）
