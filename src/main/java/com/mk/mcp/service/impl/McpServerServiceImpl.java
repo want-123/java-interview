@@ -3,10 +3,10 @@ package com.mk.mcp.service.impl;
 import com.mk.mcp.service.McpServerService;
 import com.mk.mcp.store.McpConfigStore;
 import com.mk.mcp.store.RedisMcpConfigStore;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import javax.annotation.PostConstruct;
 
 import java.util.HashMap;
 import java.util.Map;

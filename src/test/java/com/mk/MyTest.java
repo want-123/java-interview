@@ -60,7 +60,7 @@ public class MyTest {
     }
     @Test
     public void test() throws GraphStateException {
-        RetrievalAugmentor
+
 
         node1 node1 = new node1();
         node2 node2 = new node2();

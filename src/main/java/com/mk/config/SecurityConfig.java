@@ -17,6 +17,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -58,14 +61,14 @@ public class SecurityConfig {
                 // 权限控制
                 .authorizeHttpRequests(auth -> auth
                         // 公开接口
-                        .requestMatchers("/api/java/login", "/api/java/register").permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/java/login"), new AntPathRequestMatcher("/api/java/register")).permitAll()
                         // 管理员接口
-                        .requestMatchers("/api/java/admin/**").hasRole("ADMIN")
+                        .requestMatchers(new AntPathRequestMatcher("/api/java/admin/**")).hasRole("ADMIN")
                         // 普通用户接口
 //                        .requestMatchers("/api/ai/interview/add").hasAuthority("interview:add")
                         // 其他AI接口需登录
-                        .requestMatchers("/api/java/**").authenticated()
-                        .requestMatchers("/api/test/**").permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/java/**")).authenticated()
+                        .requestMatchers(new AntPathRequestMatcher("/api/test/**")).permitAll()
                         // 所有请求默认认证
                         .anyRequest().authenticated()
                 )
