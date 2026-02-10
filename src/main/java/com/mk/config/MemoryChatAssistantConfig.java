@@ -11,12 +11,17 @@ import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.data.document.loader.ClassPathDocumentLoader;
 import dev.langchain4j.data.document.splitter.DocumentByParagraphSplitter;
+import dev.langchain4j.data.document.splitter.DocumentBySentenceSplitter;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.memory.chat.TokenWindowChatMemory;
 import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.model.input.PromptTemplate;
+import dev.langchain4j.rag.DefaultRetrievalAugmentor;
+import dev.langchain4j.rag.RetrievalAugmentor;
+import dev.langchain4j.rag.content.injector.DefaultContentInjector;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.rag.query.Query;
@@ -83,6 +88,9 @@ public class MemoryChatAssistantConfig {
     private int milvusDimension;
     @Value("${milvus.database:xiaozhi}")
     private String milvusDatabase;
+
+    @Value("${rag.stb-type")
+    private String stbType;
     @Bean
     ChatMemory chatMemory() {
 //设置聊天记忆记录的message数量
@@ -191,6 +199,7 @@ public class MemoryChatAssistantConfig {
         }else {
             System.out.println("集合创建失败 : " + createCollection.getMessage());
         }
+
         return milvusClient;
     }
     
@@ -215,12 +224,14 @@ public class MemoryChatAssistantConfig {
                 .dimension(milvusDimension)
                 .build();
         // 分割->嵌入->向量存储
+
         EmbeddingStoreIngestor embeddingStoreIngestor = EmbeddingStoreIngestor.builder()
                 .embeddingModel(qwenEmbeddingModel)
                 .embeddingStore(embeddingStore())
                 .documentSplitter(new DocumentByParagraphSplitter(1024, 256))
                 .build();
         embeddingStoreIngestor.ingest(document);
+        embeddingStore.search()
         return embeddingStore;
     }
 
@@ -232,6 +243,12 @@ public class MemoryChatAssistantConfig {
                 .embeddingModel(qwenEmbeddingModel)
                 .maxResults(8) // 增加返回结果数量，提高召回率
                 .minScore(0.65) // 降低最小分数阈值，提高召回率
+                .build();
+        RetrievalAugmentor retrievalAugmentor = DefaultRetrievalAugmentor.builder()
+
+                .contentInjector(DefaultContentInjector.builder()
+                        .promptTemplate(PromptTemplate.from("{{userMessage}}\n{{contents}}"))
+                        .build())
                 .build();
         return contentRetriever;
     }
