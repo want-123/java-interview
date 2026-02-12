@@ -6,6 +6,8 @@ import com.mk.store.CompressedMessageWindowChatMemory;
 import com.mk.store.MongoChatMemoryStore;
 import com.mk.tools.InterviewAppointmentTool;
 import com.mk.util.ContextCompressor;
+import com.mk.util.RewriteQueryTransformer;
+import com.mk.util.WindowsContentInjector;
 import dev.langchain4j.community.model.dashscope.QwenChatModel;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.Metadata;
@@ -21,10 +23,13 @@ import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.input.PromptTemplate;
 import dev.langchain4j.rag.DefaultRetrievalAugmentor;
 import dev.langchain4j.rag.RetrievalAugmentor;
+import dev.langchain4j.rag.content.aggregator.ReRankingContentAggregator;
 import dev.langchain4j.rag.content.injector.DefaultContentInjector;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.rag.query.Query;
+import dev.langchain4j.rag.query.router.DefaultQueryRouter;
+import dev.langchain4j.rag.query.router.QueryRouter;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.tool.ToolProvider;
 import dev.langchain4j.service.tool.ToolService;
@@ -51,6 +56,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -231,12 +237,12 @@ public class MemoryChatAssistantConfig {
                 .documentSplitter(new DocumentByParagraphSplitter(1024, 256))
                 .build();
         embeddingStoreIngestor.ingest(document);
-        embeddingStore.search()
         return embeddingStore;
     }
 
     @Bean
     ContentRetriever contentRetrieverMilvus() {
+
         // 优化检索参数
         ContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(embeddingStore())
@@ -251,6 +257,27 @@ public class MemoryChatAssistantConfig {
                         .build())
                 .build();
         return contentRetriever;
+    }
+    @Bean
+    WindowsContentInjector windowsContentInjector() {
+        return new WindowsContentInjector(PromptTemplate.from("{{userMessage}}\n{{contents}}"), List.of("chunk"));
+    }
+    @Bean
+    RewriteQueryTransformer rewriteQueryTransformer() {
+        return new RewriteQueryTransformer(qwenChatModel);
+    }
+
+
+    @Bean
+    RetrievalAugmentor retrievalAugmentor() {
+        RetrievalAugmentor retrievalAugmentor = DefaultRetrievalAugmentor.builder()
+                .contentInjector(windowsContentInjector())
+                .queryTransformer(rewriteQueryTransformer())
+                .queryRouter(new DefaultQueryRouter(List.of(contentRetrieverMilvus(), contentRetrieverXiaozhi())))
+                .contentAggregator(ReRankingContentAggregator.builder()
+                        .build())
+                .build();
+        return retrievalAugmentor;
     }
 
 
